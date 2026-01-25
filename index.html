@@ -22,6 +22,8 @@
         <img src="dayspring-logo.png" alt="Dayspring logo" class="w-9 h-9 rounded-full object-cover" />
         <h1 class="font-bold text-lg tracking-wide">Dayspring Lagos</h1>
       </div>
+      
+      <!-- Desktop Menu -->
       <nav class="hidden md:flex gap-6 text-sm">
         <a href="#home" class="hover:text-yellow-400">Home</a>
         <a href="#about" class="hover:text-yellow-400">About</a>
@@ -36,7 +38,32 @@
         <a href="#location" class="hover:text-yellow-400">Location</a>
         <a href="blog.html" class="hover:text-yellow-400">Blog</a>
       </nav>
+
+      <!-- Mobile Menu Button -->
+      <button id="menuBtn" class="md:hidden text-neutral-100 hover:text-yellow-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
     </div>
+
+    <!-- Mobile Menu -->
+    <nav id="mobileMenu" class="hidden md:hidden bg-neutral-900 border-t border-neutral-800">
+      <div class="max-w-7xl mx-auto px-6 py-4 space-y-2 flex flex-col text-sm">
+        <a href="#home" class="hover:text-yellow-400 py-2">Home</a>
+        <a href="#about" class="hover:text-yellow-400 py-2">About</a>
+        <a href="#vision" class="hover:text-yellow-400 py-2">Vision</a>
+        <a href="#arms" class="hover:text-yellow-400 py-2">Ministries</a>
+        <a href="#leadership" class="hover:text-yellow-400 py-2">Leadership</a>
+        <a href="#services" class="hover:text-yellow-400 py-2">Services</a>
+        <a href="#events" class="hover:text-yellow-400 py-2">Events</a>
+        <a href="#prayer" class="hover:text-yellow-400 py-2">Prayer Request</a>
+        <a href="#new" class="hover:text-yellow-400 py-2">New Here</a>
+        <a href="#giving" class="hover:text-yellow-400 py-2">Giving</a>
+        <a href="#location" class="hover:text-yellow-400 py-2">Location</a>
+        <a href="blog.html" class="hover:text-yellow-400 py-2 border-t border-neutral-700 pt-3">Blog</a>
+      </div>
+    </nav>
   </header>
 
   <!-- HERO -->
@@ -422,6 +449,22 @@
 
       closeEmailModal && closeEmailModal.addEventListener('click', function(){
         emailModal && emailModal.classList.add('hidden');
+      });
+
+      // Mobile menu toggle
+      const menuBtn = document.getElementById('menuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      menuBtn && menuBtn.addEventListener('click', function(){
+        mobileMenu.classList.toggle('hidden');
+      });
+
+      // Close mobile menu when a link is clicked
+      const mobileLinks = mobileMenu ? mobileMenu.querySelectorAll('a') : [];
+      mobileLinks.forEach(link => {
+        link.addEventListener('click', function(){
+          mobileMenu.classList.add('hidden');
+        });
       });
     })();
   </script>

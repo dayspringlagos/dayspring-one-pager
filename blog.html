@@ -23,12 +23,30 @@
         <img src="dayspring-logo.png" alt="Dayspring logo" class="w-9 h-9 rounded-full object-cover" />
         <h1 class="font-bold text-lg tracking-wide">Dayspring Lagos</h1>
       </div>
+      
+      <!-- Desktop Menu -->
       <nav class="hidden md:flex gap-6 text-sm">
         <a href="web.html" class="hover:text-yellow-400">Home</a>
         <a href="#posts" class="hover:text-yellow-400">Blog</a>
         <a href="#featured" class="hover:text-yellow-400">Featured</a>
       </nav>
+
+      <!-- Mobile Menu Button -->
+      <button id="menuBtn" class="md:hidden text-neutral-100 hover:text-yellow-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
     </div>
+
+    <!-- Mobile Menu -->
+    <nav id="mobileMenu" class="hidden md:hidden bg-neutral-900 border-t border-neutral-800">
+      <div class="max-w-7xl mx-auto px-6 py-4 space-y-2 flex flex-col text-sm">
+        <a href="web.html" class="hover:text-yellow-400 py-2">Home</a>
+        <a href="#posts" class="hover:text-yellow-400 py-2">Blog</a>
+        <a href="#featured" class="hover:text-yellow-400 py-2">Featured</a>
+      </div>
+    </nav>
   </header>
 
   <!-- HERO -->
@@ -287,6 +305,22 @@
 
     // Load posts on page load
     fetchPosts();
+
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    menuBtn && menuBtn.addEventListener('click', function(){
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Close mobile menu when a link is clicked
+    const mobileLinks = mobileMenu ? mobileMenu.querySelectorAll('a') : [];
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', function(){
+        mobileMenu.classList.add('hidden');
+      });
+    });
   </script>
 
 </body>
