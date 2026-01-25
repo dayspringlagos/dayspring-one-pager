@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dayspring Admin Dashboard | Blog Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .ql-editor { min-height: 300px; color: #000; }
+    .ql-container { background: white; }
+  </style>
+</head>
+<body class="bg-neutral-950 text-neutral-100">
+
+  <!-- NAVBAR -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-neutral-900 border-b border-neutral-800">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <h1 class="font-bold text-lg tracking-wide">Dayspring Admin</h1>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="adminName" class="text-sm text-neutral-400">Admin</span>
+        <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex pt-16">
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-neutral-900 border-r border-neutral-800 min-h-screen p-6">
+      <nav class="space-y-2">
+        <button onclick="switchTab('dashboard')" class="tab-btn w-full text-left px-4 py-2 rounded hover:bg-neutral-800 active" data-tab="dashboard">📊 Dashboard</button>
+        <button onclick="switchTab('posts')" class="tab-btn w-full text-left px-4 py-2 rounded hover:bg-neutral-800" data-tab="posts">📝 Posts</button>
+        <button onclick="switchTab('newpost')" class="tab-btn w-full text-left px-4 py-2 rounded hover:bg-neutral-800" data-tab="newpost">➕ New Post</button>
+        <button onclick="switchTab('categories')" class="tab-btn w-full text-left px-4 py-2 rounded hover:bg-neutral-800" data-tab="categories">🏷️ Categories</button>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 p-8">
+
+      <!-- DASHBOARD TAB -->
+      <div id="dashboard" class="tab-content">
+        <h2 class="text-3xl font-bold mb-8">Dashboard</h2>
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="bg-neutral-900 p-6 rounded-lg border border-neutral-800">
+            <p class="text-neutral-400 mb-2">Total Posts</p>
+            <p id="totalPosts" class="text-4xl font-bold text-yellow-400">0</p>
+          </div>
+          <div class="bg-neutral-900 p-6 rounded-lg border border-neutral-800">
+            <p class="text-neutral-400 mb-2">Categories</p>
+            <p id="totalCategories" class="text-4xl font-bold text-yellow-400">0</p>
+          </div>
+          <div class="bg-neutral-900 p-6 rounded-lg border border-neutral-800">
+            <p class="text-neutral-400 mb-2">Last Updated</p>
+            <p id="lastUpdated" class="text-lg font-bold text-neutral-300">--</p>
+          </div>
+        </div>
+
+        <div class="mt-12">
+          <h3 class="text-2xl font-bold mb-6">Recent Posts</h3>
+          <div id="recentPosts" class="space-y-4">
+            <p class="text-neutral-400">Loading...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- POSTS TAB -->
+      <div id="posts" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-3xl font-bold">All Posts</h2>
+          <input 
+            type="text" 
+            id="searchPosts" 
+            placeholder="Search posts..." 
+            class="bg-neutral-900 border border-neutral-800 rounded px-4 py-2 focus:outline-none focus:border-yellow-400"
+          />
+        </div>
+        <div id="postsList" class="space-y-4">
+          <p class="text-neutral-400">Loading posts...</p>
+        </div>
+      </div>
+
+      <!-- NEW POST TAB -->
+      <div id="newpost" class="tab-content hidden">
+        <h2 class="text-3xl font-bold mb-8">Create New Post</h2>
+        <form id="postForm" class="space-y-6 max-w-4xl">
+          <div>
+            <label class="block text-sm font-semibold mb-2">Title *</label>
+            <input 
+              type="text" 
+              id="postTitle" 
+              required 
+              class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+              placeholder="Post title"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-2">Excerpt *</label>
+            <textarea 
+              id="postExcerpt" 
+              required 
+              rows="3"
+              class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+              placeholder="Short summary of the post"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-2">Content *</label>
+            <div id="postEditor" style="background: white; border-radius: 8px; overflow: hidden;"></div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold mb-2">Author</label>
+              <input 
+                type="text" 
+                id="postAuthor" 
+                class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+                placeholder="Author name"
+                value="Dayspring"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold mb-2">Category *</label>
+              <select 
+                id="postCategory" 
+                required
+                class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+              >
+                <option value="">Select a category</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-2">Featured Image URL</label>
+            <input 
+              type="url" 
+              id="postImage" 
+              class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+              placeholder="https://example.com/image.jpg"
+            />
+            <div id="imagePreview" class="mt-4 hidden">
+              <img id="previewImg" src="" alt="Preview" class="max-w-xs max-h-64 rounded" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-2">Highlights (Quotes & Bible Verses)</label>
+            <textarea 
+              id="postHighlights" 
+              rows="4"
+              class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+              placeholder='Add highlights as JSON. Example:
+[
+  { "type": "quote", "content": "Your quote here" },
+  { "type": "verse", "content": "John 3:16 - Bible verse text" }
+]'
+            ></textarea>
+            <p class="text-xs text-neutral-400 mt-2">Format: Use JSON array with type (quote or verse) and content fields</p>
+          </div>
+
+          <div class="flex gap-4">
+            <button type="submit" class="bg-yellow-400 text-neutral-900 px-8 py-3 rounded font-semibold hover:bg-yellow-300">
+              Publish Post
+            </button>
+            <button type="reset" class="bg-neutral-700 text-white px-8 py-3 rounded font-semibold hover:bg-neutral-600">
+              Reset
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- CATEGORIES TAB -->
+      <div id="categories" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-3xl font-bold">Categories</h2>
+          <button onclick="showCategoryForm()" class="bg-yellow-400 text-neutral-900 px-4 py-2 rounded font-semibold hover:bg-yellow-300">
+            ➕ New Category
+          </button>
+        </div>
+
+        <div id="categoriesList" class="space-y-4 max-w-2xl">
+          <p class="text-neutral-400">Loading categories...</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- NEW CATEGORY MODAL -->
+  <div id="categoryModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur flex items-center justify-center z-50">
+    <div class="bg-neutral-950 rounded-xl w-full max-w-md p-6 border border-neutral-800">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="categoryModalTitle" class="text-2xl font-bold">New Category</h3>
+        <button onclick="closeCategoryForm()" class="text-neutral-400 hover:text-white text-2xl">&times;</button>
+      </div>
+      <form id="categoryForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold mb-2">Category Name *</label>
+          <input 
+            type="text" 
+            id="categoryName" 
+            required 
+            class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+            placeholder="e.g., Teaching"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2">Description</label>
+          <textarea 
+            id="categoryDesc" 
+            rows="3"
+            class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+            placeholder="Category description (optional)"
+          ></textarea>
+        </div>
+        <div class="flex gap-4">
+          <button type="submit" class="flex-1 bg-yellow-400 text-neutral-900 px-4 py-2 rounded font-semibold hover:bg-yellow-300">
+            Save
+          </button>
+          <button type="button" onclick="closeCategoryForm()" class="flex-1 bg-neutral-700 text-white px-4 py-2 rounded font-semibold hover:bg-neutral-600">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT POST MODAL -->
+  <div id="editModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur flex items-center justify-center z-50 p-4">
+    <div class="bg-neutral-950 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-neutral-800">
+      <div class="sticky top-0 flex justify-between items-center p-6 border-b border-neutral-800 bg-neutral-950">
+        <h3 class="text-2xl font-bold">Edit Post</h3>
+        <button onclick="closeEditModal()" class="text-neutral-400 hover:text-white text-2xl">&times;</button>
+      </div>
+      <form id="editPostForm" class="p-6 space-y-6">
+        <input type="hidden" id="editPostId" />
+        
+        <div>
+          <label class="block text-sm font-semibold mb-2">Title *</label>
+          <input 
+            type="text" 
+            id="editTitle" 
+            required 
+            class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-2">Excerpt *</label>
+          <textarea 
+            id="editExcerpt" 
+            required 
+            rows="3"
+            class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-2">Content *</label>
+          <div id="editEditor" style="background: white; border-radius: 8px; overflow: hidden;"></div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold mb-2">Author</label>
+            <input 
+              type="text" 
+              id="editAuthor" 
+              class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-2">Category *</label>
+            <select 
+              id="editCategory" 
+              required
+              class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+            >
+              <option value="">Select a category</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-2">Featured Image URL</label>
+          <input 
+            type="url" 
+            id="editImage" 
+            class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-2">Highlights (Quotes & Bible Verses)</label>
+          <textarea 
+            id="editHighlights" 
+            rows="4"
+            class="w-full bg-neutral-900 border border-neutral-800 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
+            placeholder='Add highlights as JSON. Example:
+[
+  { "type": "quote", "content": "Your quote here" },
+  { "type": "verse", "content": "John 3:16 - Bible verse text" }
+]'
+          ></textarea>
+          <p class="text-xs text-neutral-400 mt-2">Format: Use JSON array with type (quote or verse) and content fields</p>
+        </div>
+
+        <div class="flex gap-4">
+          <button type="submit" class="bg-yellow-400 text-neutral-900 px-8 py-3 rounded font-semibold hover:bg-yellow-300">
+            Update Post
+          </button>
+          <button type="button" onclick="closeEditModal()" class="bg-neutral-700 text-white px-8 py-3 rounded font-semibold hover:bg-neutral-600">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3001/api'; // Change for production
+    let quillEditor;
+    let quillEditEditor;
+    let allCategories = [];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      initializeQuill();
+      loadDashboard();
+      loadCategories();
+      setupEventListeners();
+    });
+
+    function initializeQuill() {
+      quillEditor = new Quill('#postEditor', {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            ['blockquote', 'code-block'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link']
+          ]
+        }
+      });
+
+      quillEditEditor = new Quill('#editEditor', {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            ['blockquote', 'code-block'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link']
+          ]
+        }
+      });
+    }
+
+    function setupEventListeners() {
+      document.getElementById('postForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await createPost();
+      });
+
+      document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await saveCategory();
+      });
+
+      document.getElementById('editPostForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await updatePost();
+      });
+
+      document.getElementById('postImage').addEventListener('change', (e) => {
+        if (e.target.value) {
+          document.getElementById('imagePreview').classList.remove('hidden');
+          document.getElementById('previewImg').src = e.target.value;
+        } else {
+          document.getElementById('imagePreview').classList.add('hidden');
+        }
+      });
+
+      document.getElementById('searchPosts').addEventListener('input', loadPosts);
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('adminAuth');
+        location.reload();
+      });
+    }
+
+    // TAB SWITCHING
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+      document.getElementById(tabName).classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      if (tabName === 'posts') loadPosts();
+      if (tabName === 'dashboard') loadDashboard();
+    }
+
+    // DASHBOARD
+    async function loadDashboard() {
+      try {
+        const postsRes = await fetch(`${API_BASE}/posts?limit=100`);
+        const postsData = await postsRes.json();
+        const posts = postsData.posts || [];
+
+        document.getElementById('totalPosts').textContent = posts.length;
+        document.getElementById('totalCategories').textContent = allCategories.length;
+
+        if (posts.length > 0) {
+          document.getElementById('lastUpdated').textContent = new Date(posts[0].updated_at).toLocaleDateString();
+        }
+
+        // Recent posts
+        const recent = posts.slice(0, 5);
+        document.getElementById('recentPosts').innerHTML = recent.map(post => `
+          <div class="bg-neutral-900 p-4 rounded border border-neutral-800">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <h4 class="font-semibold">${post.title}</h4>
+                <p class="text-sm text-neutral-400">${new Date(post.created_at).toLocaleDateString()}</p>
+              </div>
+              <span class="text-xs bg-neutral-700 px-2 py-1 rounded">${post.category || 'Uncategorized'}</span>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+      }
+    }
+
+    // POSTS
+    async function loadPosts() {
+      try {
+        const searchTerm = document.getElementById('searchPosts').value;
+        let url = `${API_BASE}/posts?limit=100`;
+        if (searchTerm) {
+          url = `${API_BASE}/search?q=${encodeURIComponent(searchTerm)}`;
+        }
+
+        const res = await fetch(url);
+        const data = await res.json();
+        const posts = data.posts || [];
+
+        if (posts.length === 0) {
+          document.getElementById('postsList').innerHTML = '<p class="text-neutral-400">No posts found</p>';
+          return;
+        }
+
+        document.getElementById('postsList').innerHTML = posts.map(post => `
+          <div class="bg-neutral-900 p-6 rounded border border-neutral-800">
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex-1">
+                <h3 class="text-xl font-bold">${post.title}</h3>
+                <p class="text-sm text-neutral-400">${new Date(post.created_at).toLocaleDateString()} • By ${post.author || 'Dayspring'}</p>
+              </div>
+              <span class="text-xs bg-neutral-700 px-2 py-1 rounded">${post.category || 'Uncategorized'}</span>
+            </div>
+            <p class="text-neutral-300 mb-4 line-clamp-2">${post.excerpt}</p>
+            <div class="flex gap-3">
+              <button onclick="editPost('${post.id}')" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Edit
+              </button>
+              <button onclick="deletePost('${post.id}')" class="flex-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                Delete
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading posts:', err);
+      }
+    }
+
+    // CREATE POST
+    async function createPost() {
+      try {
+        const title = document.getElementById('postTitle').value;
+        const excerpt = document.getElementById('postExcerpt').value;
+        const content = quillEditor.root.innerHTML;
+        const image = document.getElementById('postImage').value;
+        const author = document.getElementById('postAuthor').value;
+        const categoryId = document.getElementById('postCategory').value;
+        const highlightsStr = document.getElementById('postHighlights').value;
+
+        if (!title || !excerpt || !content.trim() || !categoryId) {
+          alert('Please fill all required fields');
+          return;
+        }
+
+        // Parse highlights JSON if provided
+        let highlights = null;
+        if (highlightsStr.trim()) {
+          try {
+            highlights = JSON.stringify(JSON.parse(highlightsStr));
+          } catch (e) {
+            alert('Invalid highlights JSON format');
+            return;
+          }
+        }
+
+        const res = await fetch(`${API_BASE}/posts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            excerpt,
+            content,
+            image: image || null,
+            author: author || 'Dayspring',
+            category_id: categoryId,
+            highlights
+          })
+        });
+
+        if (res.ok) {
+          alert('✓ Post published successfully!');
+          document.getElementById('postForm').reset();
+          quillEditor.setContents([]);
+          document.getElementById('imagePreview').classList.add('hidden');
+        } else {
+          const error = await res.json();
+          alert('Error: ' + error.error);
+        }
+      } catch (err) {
+        console.error('Error creating post:', err);
+        alert('Failed to create post');
+      }
+    }
+
+    // EDIT POST
+    async function editPost(postId) {
+      try {
+        const res = await fetch(`${API_BASE}/posts/${postId}`);
+        const post = await res.json();
+
+        document.getElementById('editPostId').value = post.id;
+        document.getElementById('editTitle').value = post.title;
+        document.getElementById('editExcerpt').value = post.excerpt;
+        document.getElementById('editAuthor').value = post.author || 'Dayspring';
+        document.getElementById('editImage').value = post.image || '';
+        document.getElementById('editCategory').value = post.category_id || '';
+        
+        // Parse and display highlights
+        if (post.highlights) {
+          try {
+            const highlightsArray = JSON.parse(post.highlights);
+            document.getElementById('editHighlights').value = JSON.stringify(highlightsArray, null, 2);
+          } catch (e) {
+            document.getElementById('editHighlights').value = post.highlights;
+          }
+        } else {
+          document.getElementById('editHighlights').value = '';
+        }
+
+        quillEditEditor.root.innerHTML = post.content;
+
+        document.getElementById('editModal').classList.remove('hidden');
+      } catch (err) {
+        console.error('Error loading post:', err);
+      }
+    }
+
+    async function updatePost() {
+      try {
+        const postId = document.getElementById('editPostId').value;
+        const title = document.getElementById('editTitle').value;
+        const excerpt = document.getElementById('editExcerpt').value;
+        const content = quillEditEditor.root.innerHTML;
+        const image = document.getElementById('editImage').value;
+        const author = document.getElementById('editAuthor').value;
+        const categoryId = document.getElementById('editCategory').value;
+        const highlightsStr = document.getElementById('editHighlights').value;
+
+        // Parse highlights JSON if provided
+        let highlights = null;
+        if (highlightsStr.trim()) {
+          try {
+            highlights = JSON.stringify(JSON.parse(highlightsStr));
+          } catch (e) {
+            alert('Invalid highlights JSON format');
+            return;
+          }
+        }
+
+        const res = await fetch(`${API_BASE}/posts/${postId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            excerpt,
+            content,
+            image: image || null,
+            author: author || 'Dayspring',
+            category_id: categoryId,
+            highlights
+          })
+        });
+
+        if (res.ok) {
+          alert('✓ Post updated successfully!');
+          closeEditModal();
+          loadPosts();
+        } else {
+          const error = await res.json();
+          alert('Error: ' + error.error);
+        }
+      } catch (err) {
+        console.error('Error updating post:', err);
+        alert('Failed to update post');
+      }
+    }
+
+    // DELETE POST
+    async function deletePost(postId) {
+      if (!confirm('Are you sure you want to delete this post? This cannot be undone.')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/posts/${postId}`, { method: 'DELETE' });
+
+        if (res.ok) {
+          alert('✓ Post deleted successfully!');
+          loadPosts();
+        } else {
+          alert('Error deleting post');
+        }
+      } catch (err) {
+        console.error('Error deleting post:', err);
+      }
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    // CATEGORIES
+    async function loadCategories() {
+      try {
+        const res = await fetch(`${API_BASE}/categories`);
+        const data = await res.json();
+        allCategories = data.categories || [];
+
+        // Populate select dropdowns
+        const categorySelects = ['postCategory', 'editCategory'];
+        categorySelects.forEach(selectId => {
+          const select = document.getElementById(selectId);
+          select.innerHTML = '<option value="">Select a category</option>' + 
+            allCategories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+        });
+
+        // Display categories list
+        displayCategories();
+      } catch (err) {
+        console.error('Error loading categories:', err);
+      }
+    }
+
+    function displayCategories() {
+      document.getElementById('categoriesList').innerHTML = allCategories.map(cat => `
+        <div class="bg-neutral-900 p-6 rounded border border-neutral-800">
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="text-lg font-semibold">${cat.name}</h4>
+            <button onclick="deleteCategory('${cat.id}')" class="text-red-500 hover:text-red-400">Delete</button>
+          </div>
+          <p class="text-neutral-400 text-sm">${cat.description || 'No description'}</p>
+        </div>
+      `).join('') || '<p class="text-neutral-400">No categories yet</p>';
+    }
+
+    function showCategoryForm() {
+      document.getElementById('categoryModalTitle').textContent = 'New Category';
+      document.getElementById('categoryForm').reset();
+      document.getElementById('categoryName').value = '';
+      document.getElementById('categoryDesc').value = '';
+      document.getElementById('categoryModal').classList.remove('hidden');
+    }
+
+    function closeCategoryForm() {
+      document.getElementById('categoryModal').classList.add('hidden');
+    }
+
+    async function saveCategory() {
+      try {
+        const name = document.getElementById('categoryName').value;
+        const description = document.getElementById('categoryDesc').value;
+
+        if (!name) {
+          alert('Category name is required');
+          return;
+        }
+
+        const res = await fetch(`${API_BASE}/categories`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, description: description || null })
+        });
+
+        if (res.ok) {
+          alert('✓ Category created successfully!');
+          closeCategoryForm();
+          loadCategories();
+        } else {
+          const error = await res.json();
+          alert('Error: ' + error.error);
+        }
+      } catch (err) {
+        console.error('Error creating category:', err);
+        alert('Failed to create category');
+      }
+    }
+
+    async function deleteCategory(categoryId) {
+      if (!confirm('Are you sure you want to delete this category?')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/categories/${categoryId}`, { method: 'DELETE' });
+
+        if (res.ok) {
+          alert('✓ Category deleted successfully!');
+          loadCategories();
+        } else {
+          alert('Error deleting category');
+        }
+      } catch (err) {
+        console.error('Error deleting category:', err);
+      }
+    }
+  </script>
+
+</body>
+</html>
