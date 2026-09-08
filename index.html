@@ -34,7 +34,6 @@
         <a href="#events" class="hover:text-yellow-400">Events</a>
         <a href="#prayer" class="hover:text-yellow-400">Prayer Request</a>
         <a href="#new" class="hover:text-yellow-400">New Here</a>
-        <a href="#giving" class="hover:text-yellow-400">Giving</a>
         <a href="#location" class="hover:text-yellow-400">Location</a>
         <a href="blog.html" class="hover:text-yellow-400">Blog</a>
       </nav>
@@ -59,7 +58,6 @@
         <a href="#events" class="hover:text-yellow-400 py-2">Events</a>
         <a href="#prayer" class="hover:text-yellow-400 py-2">Prayer Request</a>
         <a href="#new" class="hover:text-yellow-400 py-2">New Here</a>
-        <a href="#giving" class="hover:text-yellow-400 py-2">Giving</a>
         <a href="#location" class="hover:text-yellow-400 py-2">Location</a>
         <a href="blog.html" class="hover:text-yellow-400 py-2 border-t border-neutral-700 pt-3">Blog</a>
       </div>
@@ -251,8 +249,26 @@
         Your giving helps us advance the Kingdom, raise disciples, and impact lives locally and globally.
       </p>
       <div class="bg-neutral-950 rounded-2xl border border-neutral-800 overflow-hidden">
-        <div class="p-6 flex justify-center">
-          <button id="giveBtn" class="bg-yellow-400 text-neutral-900 px-8 py-3 rounded-xl font-semibold">Give</button>
+        <div class="p-8">
+          <h4 class="text-lg font-semibold mb-6">Bank Details</h4>
+          <div class="space-y-4 text-left max-w-md mx-auto">
+            <div>
+              <p class="text-neutral-400 text-sm">Bank</p>
+              <p class="text-neutral-100 font-medium">9 Payment Service Bank (9PSB)</p>
+            </div>
+            <div>
+              <p class="text-neutral-400 text-sm">Account Name</p>
+              <p class="text-neutral-100 font-medium">Dayspring Lagos</p>
+            </div>
+            <div>
+              <p class="text-neutral-400 text-sm">Account Number</p>
+              <div class="flex items-center gap-3 mt-2">
+                <p id="accountNumber" class="text-neutral-100 font-medium">6174638825</p>
+                <button id="copyAccountBtn" class="bg-yellow-400 text-neutral-900 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-yellow-300 transition">Copy</button>
+              </div>
+            </div>
+          </div>
+          <p class="text-neutral-500 text-sm mt-8">Make your transfer through your preferred banking channel</p>
         </div>
       </div>
     </div>
@@ -370,6 +386,18 @@
         if (e.target === prayerModal) {
           prayerModal.classList.add('hidden');
           prayerIframe.src = '';
+        }
+      });
+
+      const copyAccountBtn = document.getElementById('copyAccountBtn');
+      const accountNumber = '6174638825';
+
+      copyAccountBtn && copyAccountBtn.addEventListener('click', function(){
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(accountNumber).then(function(){
+            copyAccountBtn.textContent = 'Copied!';
+            setTimeout(()=> copyAccountBtn.textContent = 'Copy', 1500);
+          });
         }
       });
 
